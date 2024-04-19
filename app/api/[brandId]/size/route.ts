@@ -1,0 +1,79 @@
+import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs';
+
+import prismadb from '@/lib/prismadb';
+ 
+export async function POST(
+  req: Request,
+  { params }: { params: { brandId: string } }
+) {
+  try {
+    const { userId } = auth();
+
+    const body = await req.json();
+
+    const { name, value } = body;
+
+    if (!userId) {
+      return new NextResponse("Unauthenticated", { status: 403 });
+    }
+
+    if (!name) {
+      return new NextResponse("Name is required", { status: 400 });
+    }
+
+    if (!value) {
+      return new NextResponse("Value is required", { status: 400 });
+    }
+
+    if (!params.brandId) {
+      return new NextResponse("Brand id is required", { status: 400 });
+    }
+
+    const brandByUserId = await prismadb.brand.findFirst({
+      where: {
+        id: params.brandId,
+        userId
+      }
+    });
+
+    if (!brandByUserId) {
+      return new NextResponse("Unauthorized", { status: 405 });
+    }
+
+    const size = await prismadb.size.create({
+      data: {
+        name,
+        value,
+        brandId: params.brandId
+      }
+    });
+  
+    return NextResponse.json(size);
+  } catch (error) {
+    console.log('[SIZES_POST]', error);
+    return new NextResponse("Internal error", { status: 500 });
+  }
+};
+
+export async function GET(
+  req: Request,
+  { params }: { params: { brandId: string } }
+) {
+  try {
+    if (!params.brandId) {
+      return new NextResponse("Brand id is required", { status: 400 });
+    }
+
+    const sizes = await prismadb.size.findMany({
+      where: {
+        brandId: params.brandId
+      }
+    });
+  
+    return NextResponse.json(sizes);
+  } catch (error) {
+    console.log('[SIZES_GET]', error);
+    return new NextResponse("Internal error", { status: 500 });
+  }
+};

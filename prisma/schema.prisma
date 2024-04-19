@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Brand {
+  id              String    @id @default(uuid())
+  name            String
+  userId          String
+  products        Product[]  @relation("BrandToProduct")
+  sizes           Size[]     @relation("BrandToSize")
+  allcategories   AllCategory[] @relation("BrandToAllCategory")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  brandId     String    // Foreign Key to Brand
+  brand       Brand     @relation("BrandToProduct", fields: [brandId], references: [id])
+  name        String
+  slug        String
+  description String
+  cover_img   Cover_Image[]
+  isFeatured  Boolean   @default(false)
+  isArchived  Boolean   @default(false)
+  sizeId      String    // Foreign Key to Size
+  size        Size      @relation(fields: [sizeId], references: [id])
+  images_catalogues      Image_Catalogues[]
+  datasheet   Datasheet_Catalogues[]
+  allCat      AllProductCategory[]
+  specId      String    @default("")
+  specification    Specification  @relation(fields: [specId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([brandId])
+  @@index([sizeId])
+  @@index([specId])
+}
+
+model Size {
+  id          String    @id @default(uuid())
+  brandId     String    // Foreign Key to Brand
+  brand       Brand     @relation("BrandToSize", fields: [brandId], references: [id])
+  name        String
+  value       String
+  products    Product[] // Relation to Product model
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([brandId])
+}
+
+model AllCategory {
+  id          String    @id @default(uuid())
+  brandId     String    // Foreign Key to Brand
+  brand       Brand     @relation("BrandToAllCategory", fields: [brandId], references: [id])
+  type        String    //Category, Sub Category, Sub Sub Category
+  name        String
+  slug        String
+  description String
+  thumbnail_url String
+  // products    Product[] // Relation to Product model
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([brandId])
+}
+
+model Image_Catalogues {
+  id          String   @id @default(uuid())
+  productId   String   // Foreign Key to Product
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url         String   // URL of the image
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Cover_Image {
+  id          String   @id @default(uuid())
+  productId   String   // Foreign Key to Product
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url         String   // URL of the image
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Datasheet_Catalogues {
+  id          String   @id @default(uuid())
+  productId   String   // Foreign Key to Product
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url         String   // URL of the image
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model Specification {
+  id          String    @id @default(uuid())
+  impedance   String
+  dc_resistance_re  String
+  coil_inductance_le  String
+  effective_piston_area_sd  String
+  voice_coil_diameter String
+  voice_coil_height String
+  air_gap_height  String
+  linear_coil_travel_pp String
+  moving_mass_mms String
+  free_air_resonance_fs String
+  sensitivity String
+  mechanical_q_factor_qms String
+  electrical_q_factor_qes String
+  total_q_factor_qts  String
+  force_factor_bi String
+  rated_power_handling  String
+  magnetic_flux_density String
+  magnet_weight String
+  net_weight  String
+  equivalent_volume_vas String
+  compliance_cms  String
+  mechanical_loss_rms String
+  recommended_frequency_range String
+  max_mechanical_cone_excursion_xmech String
+  productId   String   // Foreign Key to Product
+  product     Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+}
+
+model AllProductCategory {
+  id          String   @id @default(uuid())
+  productId   String   // Foreign Key to Product
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId  String
+  type        String    //Category, Sub Category, Sub Sub Category
+  name        String
+  slug        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([productId])
+}
+
